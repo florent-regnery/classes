@@ -1,25 +1,19 @@
 <?php
 echo '<pre>';
-
+// création de classe User
 class User
 {
-    // l'attribut il accessible uniquement dans la classe
+    // l'attribut est accessible uniquement dans la classe
     // private $id;
-    // l'attribut il accessible partout
-    // public $price = 25;
-    // l'attribut il accessible partout dans les enfants et reste privé à l'exterieur (héritage)
+
+    // l'attribut est accessible partout dans les enfants et reste privé à l'exterieur (héritage)
     // protected
 
     private $id;
-
     public $login;
-
     public $email;
-
     public $firstname;
-
     public $lastname;
-
     private $mysqli;
 
     // function qui est appelé au moment de la création d'une instance de notre classe
@@ -27,17 +21,19 @@ class User
     {
         $this->mysqli = new mysqli("localhost", "root", "", "classes");
     }
+    // enregistrer les infos de l'utilisateur et retourner un tableau
     public function register($login, $password, $email, $firstname, $lastname)
     {
 
-        if ($this->mysqli->connect_errno) {
-            echo "Échec lors de la connexion à MySQL : (" . $this->mysqli->connect_errno . ") " . $this->mysqli->connect_error;
+        if ($this->getMysqli()->connect_errno) {
+            echo "Échec lors de la connexion à MySQL : (" . $this->getMysqli()->connect_errno . ") " . $this->getMysqli()->connect_error;
         }
-        $stmt = $this->mysqli->prepare("INSERT INTO utilisateurs(login, password, email, firstname, lastname) VALUES (?,?,?,?,?)");
+        $stmt = $this->getMysqli()->prepare("INSERT INTO utilisateurs(login, password, email, firstname, lastname) VALUES (?,?,?,?,?)");
         if ($stmt) {
             if (!$stmt->bind_param('sssss', $login, $password, $email, $firstname, $lastname)) {
                 echo "Échec lors du liage des paramètres : (" . $stmt->errno . ") " . $stmt->error;
             }
+            // insert email en unique bdd erreur 
             if (!$stmt->execute()) {
                 if ($stmt->errno === 1062) {
                     echo 'Ce compte existe déjà, veuillez utiliser un autre identifiant';
@@ -46,7 +42,7 @@ class User
                 }
             } else {
                 return [
-                    'id' => $this->mysqli->insert_id,
+                    'id' => $this->getMysqli()->insert_id,
                     'login' => $login,
                     'email' => $email,
                     'firstname' => $firstname,
@@ -59,6 +55,7 @@ class User
         }
     }
 
+    // Deux éxemples de connexions deux méthodes fetch_object et fetch_assoc
 
     public static function connectStatic($login, $password)
     {
@@ -72,11 +69,14 @@ class User
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->fetch_object(User::class);
+        // retourner un objet avec les propriétés d'un objet
     }
+    // Deux éxemples de connexions deux méthodes fetch_object et fetch_assoc
+    // fecth_assoc on récupère les clefs et les valeurs ( tableau associatif) du tableau userArray
 
     public function connect($login, $password)
     {
-        $stmt = $this->mysqli->prepare("
+        $stmt = $this->getMysqli()->prepare("
             SELECT id, login, email, firstname, lastname 
             FROM utilisateurs
             WHERE login = ? AND password = ? 
@@ -93,13 +93,17 @@ class User
         return $this;
     }
 
+    public function isConnected()
+    {
+        return $this->id !== null;
+    }
+
     public function disconnect()
     {
+        // Vérfie la clef id qui est set ( existe ou pas connecté) on itère sur notre objet, on récupère la propriété de l'objet = null / sauf si mysqli on peut reco l'user
         if ($this->isConnected()) {
             foreach ($this as $key => $value) {
-                if ($key !== 'mysqli') {
-                    $this->$key = null;
-                }
+                $this->$key = null;
             }
         }
     }
@@ -107,7 +111,7 @@ class User
     public function delete()
     {
         if ($this->isConnected()) {
-            $stmt = $this->mysqli->prepare("DELETE FROM utilisateurs WHERE id = ?");
+            $stmt = $this->getMysqli()->prepare("DELETE FROM utilisateurs WHERE id = ?");
             $stmt->bind_param('i', $this->id);
             $stmt->execute();
             $this->disconnect();
@@ -116,7 +120,7 @@ class User
 
     public function update($login, $password, $email, $firstname, $lastname)
     {
-        $stmt = $this->mysqli->prepare("
+        $stmt = $this->getMysqli()->prepare("
             UPDATE utilisateurs 
             SET login = ?,
             password = ?,
@@ -144,12 +148,6 @@ class User
             'lastname' => $this->lastname
         ];
     }
-
-    public function isConnected()
-    {
-        return $this->id !== null;
-    }
-
 
     /**
      * Get the value of login
@@ -198,10 +196,14 @@ $user2 = new User();
 // var_dump($user, $user2);
 // die;
 // $user->register('Flo1', 'motdepasse', 'florent.r@gmail.com', 'Florent', 'Regnery');
-$user->connect('Flo1', 'motdepasse');
-var_dump($user->getLogin(), $user2->isConnected());
+$user->connect('Flo5555', 'motdepasse');
+// var_dump($user->getLogin(), $user->isConnected(), $user);
+$user->disconnect();
+$user->update('Flo1', 'motdepasse', 'flo@yahoo.com', 'Florent', 'Regis');
+
+var_dump($user);
 die;
 
-$user->update('Flo5555', 'motdepasse', 'florent.r@gmail.com', 'Florent', 'Regnery');
+$user->update('Flo5555', 'motdepasse', 'flo5@hotmail.com', 'Florent', 'Regis');
 var_dump($user);
 //$user->connect('Flo1', 'motdepasse')
