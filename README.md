@@ -1,5 +1,7 @@
 # classes
 
+Job 01
+
 Descriptif du projet :
 
 Créez un fichier nommé “user.php”. Dans ce fichier, créez une classe
@@ -26,6 +28,7 @@ Créez les méthodes suivants :
 - getEmail 
 - getFirstname 
 - getLastname
+
 
 Job 2
 
