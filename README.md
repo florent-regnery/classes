@@ -28,6 +28,7 @@ Créez les méthodes suivants :
 - getLastname
 
 Job 2
-Créez un fichier nommé “user-pdo.php”. Dans ce fichier, créez une classe
-“userpdo” en vous basant sur la classe user que vous avez créé dans le
+
+Créez un fichier nommé “user-pdo.php”. 
+Dans ce fichier, créez une classe “userpdo” en vous basant sur la classe user que vous avez créé dans le
 job1. Vos requêtes SQL doivent maintenant être faites avec pdo.
